@@ -396,7 +396,7 @@ if(WITH_DPDK)
   set(HAVE_DPDK TRUE)
 endif()
 
-option(WITH_BLKIN "Use blkin to emit LTTng tracepoints for Zipkin" OFF)
+option(WITH_BLKIN "Use blkin to emit LTTng tracepoints for Zipkin" ON)
 if(WITH_BLKIN)
   find_package(OPENTRACE REQUIRED)
   find_package(JAEGER REQUIRED)
