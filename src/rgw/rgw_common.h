@@ -33,6 +33,9 @@
 #include "cls/rgw/cls_rgw_types.h"
 #include "include/rados/librados.hpp"
 
+/*Patricia*/
+#include "common/zipkin_trace.h"
+
 namespace ceph {
   class Formatter;
 }

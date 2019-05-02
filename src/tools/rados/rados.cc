@@ -26,6 +26,7 @@
 
 #include "common/config.h"
 #include "common/ceph_argparse.h"
+#include "common/zipkin_trace.h"
 #include "global/global_init.h"
 #include "common/Cond.h"
 #include "common/debug.h"
@@ -58,13 +59,14 @@
 #include "RadosImport.h"
 
 #include "osd/ECUtil.h"
-
+#include "include/tracer.h"
 using namespace librados;
 using ceph::util::generate_random_number;
 
 // two steps seem to be necessary to do this right
 #define STR(x) _STR(x)
 #define _STR(x) #x
+
 
 void usage(ostream& out)
 {
@@ -1087,6 +1089,10 @@ protected:
       snprintf(key, sizeof(key), "bench-xattr-key-%d", (int)offset);
       op.setxattr(key, bl);
     }
+   
+    active_parent = std::move(opentracing::Tracer::Global()->StartSpan("rados:aio_write"));
+    //std::shared_ptr<opentracing::Span> shared =  opentracing::Tracer::Global()->StartSpan("rados:aio_write"); 
+    //ZTracer::active_parent = boost::thread_specific_ptr<opentracing::Span>(to_boost(shared).get());
 
     return io_ctx.aio_operate(oid, completions[slot], &op);
   }

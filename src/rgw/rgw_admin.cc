@@ -2589,6 +2589,21 @@ static int trim_sync_error_log(int shard_id, const ceph::real_time& start_time,
   // unreachable
 }
 
+using namespace std;
+namespace {
+   void start_span() {
+      auto span = opentracing::Tracer::Global()->StartSpan("rgwadmin-main");
+   }
+   void setup_jaeger() {
+      auto configYAML = YAML::LoadFile("/home/maniaa/config.yml");
+      auto config = jaegertracing::Config::parse(configYAML);
+      auto tracer = jaegertracing::Tracer::make(
+          "radosgw-admin", config, jaegertracing::logging::consoleLogger());
+      opentracing::Tracer::InitGlobal(
+          std::static_pointer_cast<opentracing::Tracer>(tracer));
+   }
+}
+
 int main(int argc, const char **argv)
 {
   vector<const char*> args;
@@ -2609,7 +2624,12 @@ int main(int argc, const char **argv)
   if (!g_conf()->rgw_region.empty() && g_conf()->rgw_zonegroup.empty()) {
     g_conf().set_val_or_die("rgw_zonegroup", g_conf()->rgw_region.c_str());
   }
+  
 
+  /*Patricia*/
+  //setup_jaeger();
+  //start_span();
+  //opentracing::Tracer::Global()->Close();
   common_init_finish(g_ceph_context);
 
   rgw_user user_id;

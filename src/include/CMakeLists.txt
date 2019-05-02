@@ -2,6 +2,7 @@ install(FILES rados/librados.h
   rados/rados_types.h
   rados/rados_types.hpp
   rados/librados.hpp
+  tracer.h
   buffer.h
   buffer_fwd.h
   inline_memory.h
@@ -18,6 +19,7 @@ endif()
 
 if(WITH_RBD)
   install(FILES
+    tracer.h
     rbd/features.h
     rbd/librbd.h
     rbd/librbd.hpp
@@ -26,6 +28,7 @@ endif()
 
 if(WITH_RADOSGW)
   install(FILES
+    tracer.h
     rados/librgw.h
     rados/rgw_file.h
     rgw/librgw_admin_user.h

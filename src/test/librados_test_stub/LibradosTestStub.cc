@@ -402,7 +402,7 @@ int IoCtx::aio_notify(const std::string& oid, AioCompletion *c, bufferlist& bl,
 
 int IoCtx::aio_operate(const std::string& oid, AioCompletion *c,
                        ObjectReadOperation *op, bufferlist *pbl) {
-  return aio_operate(oid, c, op, 0, pbl);
+  return aio_operate(oid, c, op, 0, pbl, 0);
 }
 
 int IoCtx::aio_operate(const std::string& oid, AioCompletion *c,
@@ -413,11 +413,11 @@ int IoCtx::aio_operate(const std::string& oid, AioCompletion *c,
   return ctx->aio_operate_read(oid, *ops, c->pc, flags, pbl);
 }
 
-int IoCtx::aio_operate(const std::string& oid, AioCompletion *c,
-                       ObjectReadOperation *op, int flags,
-                       bufferlist *pbl, const blkin_trace_info *trace_info) {
-  return aio_operate(oid, c, op, flags, pbl);
-}
+//int IoCtx::aio_operate(const std::string& oid, AioCompletion *c,
+//                       ObjectReadOperation *op, int flags,
+//                       bufferlist *pbl) {
+//  return aio_operate(oid, c, op, flags, pbl);
+//}
 
 int IoCtx::aio_operate(const std::string& oid, AioCompletion *c,
                        ObjectWriteOperation *op) {
@@ -429,7 +429,7 @@ int IoCtx::aio_operate(const std::string& oid, AioCompletion *c,
 int IoCtx::aio_operate(const std::string& oid, AioCompletion *c,
                        ObjectWriteOperation *op, snap_t seq,
                        std::vector<snap_t>& snaps, int flags,
-                       const blkin_trace_info *trace_info) {
+                       void * parent_trace) {
   TestIoCtxImpl *ctx = reinterpret_cast<TestIoCtxImpl*>(io_ctx_impl);
   TestObjectOperationImpl *ops = reinterpret_cast<TestObjectOperationImpl*>(op->impl);
 
@@ -445,14 +445,15 @@ int IoCtx::aio_operate(const std::string& oid, AioCompletion *c,
 int IoCtx::aio_operate(const std::string& oid, AioCompletion *c,
                        ObjectWriteOperation *op, snap_t seq,
                        std::vector<snap_t>& snaps) {
-  return aio_operate(oid, c, op, seq, snaps, 0, nullptr);
+  return aio_operate(oid, c, op, seq, snaps, 0);
+  //return aio_operate(oid, c, op, seq, snaps, 0, nullptr);
 }
 
 int IoCtx::aio_operate(const std::string& oid, AioCompletion *c,
                        ObjectWriteOperation *op, snap_t seq,
                        std::vector<snap_t>& snaps,
-		       const blkin_trace_info *trace_info) {
-  return aio_operate(oid, c, op, seq, snaps, 0, trace_info);
+		       void * parent_trace) {
+  return aio_operate(oid, c, op, seq, snaps, 0, nullptr);
 }
 
 int IoCtx::aio_remove(const std::string& oid, AioCompletion *c) {

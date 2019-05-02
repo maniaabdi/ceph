@@ -678,8 +678,12 @@ EOF
 
             local uuid=`uuidgen`
             echo "add osd$osd $uuid"
-	    OSD_SECRET=$($CEPH_BIN/ceph-authtool --gen-print-key)
-	    echo "{\"cephx_secret\": \"$OSD_SECRET\"}" > $CEPH_DEV_DIR/osd$osd/new.json
+	    OSD_SECRET1=$($CEPH_BIN/ceph-authtool --gen-print-key)
+            #echo "Mania"
+            #echo "${OSD_SECRET//INFO: Initializing logging reporter}"
+	    #OSD_SECRET="${OSD_SECRET1//INFO: Initializing logging reporter}"
+            OSD_SECRET="${OSD_SECRET1}"
+            echo "{\"cephx_secret\": \"$OSD_SECRET\"}" > $CEPH_DEV_DIR/osd$osd/new.json
             ceph_adm osd new $uuid -i $CEPH_DEV_DIR/osd$osd/new.json
 	    rm $CEPH_DEV_DIR/osd$osd/new.json
             $SUDO $CEPH_BIN/ceph-osd -i $osd $ARGS --mkfs --key $OSD_SECRET --osd-uuid $uuid
@@ -690,6 +694,7 @@ EOF
 	key = $OSD_SECRET
 EOF
             echo adding osd$osd key to auth repository
+	    echo "$key_fn"
             ceph_adm -i "$key_fn" auth add osd.$osd osd "allow *" mon "allow profile osd" mgr "allow profile osd"
         fi
         echo start osd.$osd

@@ -641,7 +641,7 @@ TEST_F(TestMockJournal, ReplayCompleteError) {
   expect_get_max_append_size(mock_journaler, 1 << 16);
   expect_start_replay(
     mock_image_ctx, mock_journaler,
-    std::bind(&invoke_replay_complete, _1, -EINVAL));
+    std::bind(&invoke_replay_complete,std::placeholders::_1, -EINVAL));
 
   MockJournalReplay mock_journal_replay;
   expect_stop_replay(mock_journaler);
@@ -656,7 +656,7 @@ TEST_F(TestMockJournal, ReplayCompleteError) {
   expect_get_max_append_size(mock_journaler, 1 << 16);
   expect_start_replay(
     mock_image_ctx, mock_journaler,
-    std::bind(&invoke_replay_complete, _1, 0));
+    std::bind(&invoke_replay_complete, std::placeholders::_1, 0));
 
   expect_stop_replay(mock_journaler);
   expect_shut_down_replay(mock_image_ctx, mock_journal_replay, 0);
@@ -693,14 +693,14 @@ TEST_F(TestMockJournal, FlushReplayError) {
   expect_get_max_append_size(mock_journaler, 1 << 16);
   expect_start_replay(
     mock_image_ctx, mock_journaler,
-    std::bind(&invoke_replay_ready, _1));
+    std::bind(&invoke_replay_ready, std::placeholders::_1));
 
   ::journal::MockReplayEntry mock_replay_entry;
   MockJournalReplay mock_journal_replay;
   expect_try_pop_front(mock_image_ctx, mock_journaler, true, mock_replay_entry);
   expect_replay_process(mock_journal_replay);
   expect_try_pop_front(mock_image_ctx, mock_journaler, false, mock_replay_entry,
-                       std::bind(&invoke_replay_complete, _1, 0));
+                       std::bind(&invoke_replay_complete, std::placeholders::_1, 0));
   expect_stop_replay(mock_journaler);
   expect_shut_down_replay(mock_image_ctx, mock_journal_replay, -EINVAL);
   expect_flush_commit_position(mock_journaler);
@@ -713,7 +713,7 @@ TEST_F(TestMockJournal, FlushReplayError) {
   expect_get_max_append_size(mock_journaler, 1 << 16);
   expect_start_replay(
     mock_image_ctx, mock_journaler,
-    std::bind(&invoke_replay_complete, _1, 0));
+    std::bind(&invoke_replay_complete, std::placeholders::_1, 0));
 
   expect_stop_replay(mock_journaler);
   expect_shut_down_replay(mock_image_ctx, mock_journal_replay, 0);
@@ -750,7 +750,7 @@ TEST_F(TestMockJournal, CorruptEntry) {
   expect_get_max_append_size(mock_journaler, 1 << 16);
   expect_start_replay(
     mock_image_ctx, mock_journaler,
-    std::bind(&invoke_replay_ready, _1));
+    std::bind(&invoke_replay_ready, std::placeholders::_1));
 
   ::journal::MockReplayEntry mock_replay_entry;
   MockJournalReplay mock_journal_replay;
@@ -768,7 +768,7 @@ TEST_F(TestMockJournal, CorruptEntry) {
   expect_get_max_append_size(mock_journaler, 1 << 16);
   expect_start_replay(
     mock_image_ctx, mock_journaler,
-    std::bind(&invoke_replay_complete, _1, 0));
+    std::bind(&invoke_replay_complete, std::placeholders::_1, 0));
   expect_stop_replay(mock_journaler);
   expect_shut_down_replay(mock_image_ctx, mock_journal_replay, 0);
   expect_flush_commit_position(mock_journaler);
@@ -804,7 +804,7 @@ TEST_F(TestMockJournal, StopError) {
   expect_get_max_append_size(mock_journaler, 1 << 16);
   expect_start_replay(
     mock_image_ctx, mock_journaler,
-    std::bind(&invoke_replay_complete, _1, 0));
+    std::bind(&invoke_replay_complete, std::placeholders::_1, 0));
 
   MockJournalReplay mock_journal_replay;
   expect_stop_replay(mock_journaler);
@@ -842,7 +842,7 @@ TEST_F(TestMockJournal, ReplayOnDiskPreFlushError) {
 
   expect_start_replay(
     mock_image_ctx, mock_journaler,
-    std::bind(&invoke_replay_ready, _1));
+    std::bind(&invoke_replay_ready, std::placeholders::_1));
 
   ::journal::MockReplayEntry mock_replay_entry;
   MockJournalReplay mock_journal_replay;
@@ -869,7 +869,7 @@ TEST_F(TestMockJournal, ReplayOnDiskPreFlushError) {
   expect_get_max_append_size(mock_journaler, 1 << 16);
   expect_start_replay(
     mock_image_ctx, mock_journaler, {
-      std::bind(&invoke_replay_complete, _1, 0)
+      std::bind(&invoke_replay_complete, std::placeholders::_1, 0)
     });
 
   expect_stop_replay(mock_journaler);
@@ -928,14 +928,14 @@ TEST_F(TestMockJournal, ReplayOnDiskPostFlushError) {
   expect_get_max_append_size(mock_journaler, 1 << 16);
   expect_start_replay(
     mock_image_ctx, mock_journaler,
-    std::bind(&invoke_replay_ready, _1));
+    std::bind(&invoke_replay_ready, std::placeholders::_1));
 
   ::journal::MockReplayEntry mock_replay_entry;
   MockJournalReplay mock_journal_replay;
   expect_try_pop_front(mock_image_ctx, mock_journaler, true, mock_replay_entry);
   expect_replay_process(mock_journal_replay);
   expect_try_pop_front(mock_image_ctx, mock_journaler, false, mock_replay_entry,
-                       std::bind(&invoke_replay_complete, _1, 0));
+                       std::bind(&invoke_replay_complete, std::placeholders::_1, 0));
   expect_stop_replay(mock_journaler);
 
   Context *on_flush = nullptr;
@@ -952,7 +952,7 @@ TEST_F(TestMockJournal, ReplayOnDiskPostFlushError) {
   expect_get_max_append_size(mock_journaler, 1 << 16);
   expect_start_replay(
     mock_image_ctx, mock_journaler,
-    std::bind(&invoke_replay_complete, _1, 0));
+    std::bind(&invoke_replay_complete, std::placeholders::_1, 0));
 
   expect_stop_replay(mock_journaler);
   expect_shut_down_replay(mock_image_ctx, mock_journal_replay, 0);

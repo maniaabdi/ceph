@@ -28,6 +28,8 @@
 #include "osd/osd_types.h"
 #include "osdc/Objecter.h"
 
+#include "include/tracer.h"
+
 class RadosClient;
 
 struct librados::IoCtxImpl {
@@ -154,13 +156,16 @@ struct librados::IoCtxImpl {
   int getxattrs(const object_t& oid, map<string, bufferlist>& attrset);
   int rmxattr(const object_t& oid, const char *name);
 
-  int operate(const object_t& oid, ::ObjectOperation *o, ceph::real_time *pmtime, int flags=0);
-  int operate_read(const object_t& oid, ::ObjectOperation *o, bufferlist *pbl, int flags=0);
+  int operate(const object_t& oid, ::ObjectOperation *o, ceph::real_time *pmtime, int flags=0,
+                  const std::unique_ptr<opentracing::Span>& parent_trace = NULL);
+  int operate_read(const object_t& oid, ::ObjectOperation *o, bufferlist *pbl, int flags=0, 
+                  const std::unique_ptr<opentracing::Span>& parent_trace = NULL);
   int aio_operate(const object_t& oid, ::ObjectOperation *o,
-		  AioCompletionImpl *c, const SnapContext& snap_context,
-		  int flags, const blkin_trace_info *trace_info = nullptr);
+		  AioCompletionImpl *c, const SnapContext& snap_context, int flags, 
+                  const std::unique_ptr<opentracing::Span>& parent_trace = NULL);
   int aio_operate_read(const object_t& oid, ::ObjectOperation *o,
-		       AioCompletionImpl *c, int flags, bufferlist *pbl, const blkin_trace_info *trace_info = nullptr);
+		  AioCompletionImpl *c, int flags, bufferlist *pbl, 
+                  const std::unique_ptr<opentracing::Span>& parent_trace = NULL);
 
   struct C_aio_stat_Ack : public Context {
     librados::AioCompletionImpl *c;
@@ -189,10 +194,10 @@ struct librados::IoCtxImpl {
 
   int aio_read(const object_t oid, AioCompletionImpl *c,
 	       bufferlist *pbl, size_t len, uint64_t off, uint64_t snapid,
-	       const blkin_trace_info *info = nullptr);
+	       const std::unique_ptr<opentracing::Span>& parent_trace = nullptr);
   int aio_read(object_t oid, AioCompletionImpl *c,
 	       char *buf, size_t len, uint64_t off, uint64_t snapid,
-	       const blkin_trace_info *info = nullptr);
+	       const std::unique_ptr<opentracing::Span>& parent_trace = nullptr);
   int aio_sparse_read(const object_t oid, AioCompletionImpl *c,
 		      std::map<uint64_t,uint64_t> *m, bufferlist *data_bl,
 		      size_t len, uint64_t off, uint64_t snapid);
@@ -202,7 +207,7 @@ struct librados::IoCtxImpl {
 		      const char *cmp_buf, size_t cmp_len, uint64_t off);
   int aio_write(const object_t &oid, AioCompletionImpl *c,
 		const bufferlist& bl, size_t len, uint64_t off,
-		const blkin_trace_info *info = nullptr);
+		const std::unique_ptr<opentracing::Span>& parent_trace = nullptr);
   int aio_append(const object_t &oid, AioCompletionImpl *c,
 		 const bufferlist& bl, size_t len);
   int aio_write_full(const object_t &oid, AioCompletionImpl *c,

@@ -70,6 +70,8 @@ struct ObjectOperation {
   vector<bufferlist*> out_bl;
   vector<Context*> out_handler;
   vector<int*> out_rval;
+  
+  opentracing::Span *active_parent;
 
   ObjectOperation() : flags(0), priority(0) {}
   ~ObjectOperation() {

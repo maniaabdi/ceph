@@ -52,7 +52,7 @@ void ObjectPlayer::fetch(Context *on_finish) {
   librados::AioCompletion *rados_completion =
     librados::Rados::aio_create_completion(context, utils::rados_ctx_callback,
                                            NULL);
-  int r = m_ioctx.aio_operate(m_oid, rados_completion, &op, 0, NULL);
+  int r = m_ioctx.aio_operate(m_oid, rados_completion, &op, 0, NULL, 0);
   ceph_assert(r == 0);
   rados_completion->release();
 }

@@ -27,6 +27,7 @@
 #undef dout_prefix
 #define dout_prefix *_dout << "librados: "
 
+
 namespace librados {
 namespace {
 
@@ -660,7 +661,8 @@ int librados::IoCtxImpl::writesame(const object_t& oid, bufferlist& bl,
 }
 
 int librados::IoCtxImpl::operate(const object_t& oid, ::ObjectOperation *o,
-				 ceph::real_time *pmtime, int flags)
+				 ceph::real_time *pmtime, int flags,
+				 const std::unique_ptr<opentracing::Span>& parent_trace)
 {
   ceph::real_time ut = (pmtime ? *pmtime :
     ceph::real_clock::now());
@@ -683,6 +685,15 @@ int librados::IoCtxImpl::operate(const object_t& oid, ::ObjectOperation *o,
   int op = o->ops[0].op.op;
   ldout(client->cct, 10) << ceph_osd_op_name(op) << " oid=" << oid
 			 << " nspace=" << oloc.nspace << dendl;
+
+  if (parent_trace) { 
+      auto span = opentracing::Tracer::Global()->StartSpan(
+        "IoCtxImpl::operate, rados operate", { opentracing::ChildOf(&parent_trace->context()) });
+  }
+  else{
+      auto span = opentracing::Tracer::Global()->StartSpan("IoCtxImpl::operate, rados operate");
+  }
+
   Objecter::Op *objecter_op = objecter->prepare_mutate_op(oid, oloc,
 							  *o, snapc, ut, flags,
 							  oncommit, &ver);
@@ -703,7 +714,8 @@ int librados::IoCtxImpl::operate(const object_t& oid, ::ObjectOperation *o,
 int librados::IoCtxImpl::operate_read(const object_t& oid,
 				      ::ObjectOperation *o,
 				      bufferlist *pbl,
-				      int flags)
+				      int flags,
+				      const std::unique_ptr<opentracing::Span>& parent_trace)
 {
   if (!o->size())
     return 0;
@@ -718,6 +730,15 @@ int librados::IoCtxImpl::operate_read(const object_t& oid,
 
   int op = o->ops[0].op.op;
   ldout(client->cct, 10) << ceph_osd_op_name(op) << " oid=" << oid << " nspace=" << oloc.nspace << dendl;
+
+  if (parent_trace) { 
+      auto span = opentracing::Tracer::Global()->StartSpan(
+        "IoCtxImpl::operate_read, rados operate", { opentracing::ChildOf(&parent_trace->context()) });
+  }
+  else{
+      auto span = opentracing::Tracer::Global()->StartSpan("IoCtxImpl::operate_read, rados operate");
+  }
+
   Objecter::Op *objecter_op = objecter->prepare_read_op(oid, oloc,
 	                                      *o, snap_seq, pbl, flags,
 	                                      onack, &ver);
@@ -740,7 +761,7 @@ int librados::IoCtxImpl::aio_operate_read(const object_t &oid,
 					  AioCompletionImpl *c,
 					  int flags,
 					  bufferlist *pbl,
-                                          const blkin_trace_info *trace_info)
+                                          const std::unique_ptr<opentracing::Span>& parent_trace)
 {
   FUNCTRACE(client->cct);
   Context *oncomplete = new C_aio_Complete(c);
@@ -750,19 +771,23 @@ int librados::IoCtxImpl::aio_operate_read(const object_t &oid,
 #endif
   c->is_read = true;
   c->io = this;
-
-  ZTracer::Trace trace;
-  if (trace_info) {
-    ZTracer::Trace parent_trace("", nullptr, trace_info);
-    trace.init("rados operate read", &objecter->trace_endpoint, &parent_trace);
+  
+  std::unique_ptr<opentracing::Span> span;
+  if (parent_trace) {
+      span = opentracing::Tracer::Global()->StartSpan(
+        "IoCtxImpl::aio_operate_read, rados operate", { opentracing::ChildOf(&parent_trace->context()) });
   }
+  else{ 
+      span = opentracing::Tracer::Global()->StartSpan("IoCtxImpl::aio_operate_read, rados operate");
+  }
+ 
 
-  trace.event("init root span");
+  //trace.event("init root span");
   Objecter::Op *objecter_op = objecter->prepare_read_op(oid, oloc,
 		 *o, snap_seq, pbl, flags,
-		 oncomplete, &c->objver, nullptr, 0, &trace);
+		 oncomplete, &c->objver, nullptr, 0);
   objecter->op_submit(objecter_op, &c->tid);
-  trace.event("rados operate read submitted");
+  //trace.event("rados operate read submitted");
 
   return 0;
 }
@@ -770,7 +795,7 @@ int librados::IoCtxImpl::aio_operate_read(const object_t &oid,
 int librados::IoCtxImpl::aio_operate(const object_t& oid,
 				     ::ObjectOperation *o, AioCompletionImpl *c,
 				     const SnapContext& snap_context, int flags,
-                                     const blkin_trace_info *trace_info)
+                                     const std::unique_ptr<opentracing::Span>& parent_trace)
 {
   FUNCTRACE(client->cct);
   OID_EVENT_TRACE(oid.name.c_str(), "RADOS_WRITE_OP_BEGIN");
@@ -787,25 +812,29 @@ int librados::IoCtxImpl::aio_operate(const object_t& oid,
   c->io = this;
   queue_aio_write(c);
 
-  ZTracer::Trace trace;
-  if (trace_info) {
-    ZTracer::Trace parent_trace("", nullptr, trace_info);
-    trace.init("rados operate", &objecter->trace_endpoint, &parent_trace);
+  std::unique_ptr<opentracing::Span> span;
+  if (parent_trace) {
+      span = opentracing::Tracer::Global()->StartSpan(
+        "IoCtxImpl::aio_operate, rados operate", { opentracing::ChildOf(&parent_trace->context()) });
+  }
+  else{
+      span = opentracing::Tracer::Global()->StartSpan("IoCtxImpl::aio_operate, rados operate");
   }
 
-  trace.event("init root span");
+  
+  //trace.event("init root span");
   Objecter::Op *op = objecter->prepare_mutate_op(
     oid, oloc, *o, snap_context, ut, flags,
-    oncomplete, &c->objver, osd_reqid_t(), &trace);
+    oncomplete, &c->objver, osd_reqid_t());
   objecter->op_submit(op, &c->tid);
-  trace.event("rados operate op submitted");
+  //trace.event("rados operate op submitted");
 
   return 0;
 }
 
 int librados::IoCtxImpl::aio_read(const object_t oid, AioCompletionImpl *c,
 				  bufferlist *pbl, size_t len, uint64_t off,
-				  uint64_t snapid, const blkin_trace_info *info)
+				  uint64_t snapid, const std::unique_ptr<opentracing::Span>& parent_trace)
 {
   FUNCTRACE(client->cct);
   if (len > (size_t) INT_MAX)
@@ -821,21 +850,27 @@ int librados::IoCtxImpl::aio_read(const object_t oid, AioCompletionImpl *c,
   c->io = this;
   c->blp = pbl;
 
-  ZTracer::Trace trace;
-  if (info)
-    trace.init("rados read", &objecter->trace_endpoint, info);
+  std::unique_ptr<opentracing::Span> span;
+  if (parent_trace) {
+      span = opentracing::Tracer::Global()->StartSpan(
+        "IoCtxImpl::aio_read, rados operate", { opentracing::ChildOf(&parent_trace->context()) });
+  }
+  else{
+      span = opentracing::Tracer::Global()->StartSpan("IoCtxImpl::aio_read, rados operate");
+  }
 
   Objecter::Op *o = objecter->prepare_read_op(
     oid, oloc,
     off, len, snapid, pbl, 0,
-    oncomplete, &c->objver, nullptr, 0, &trace);
+    oncomplete, &c->objver, nullptr, 0);
   objecter->op_submit(o, &c->tid);
   return 0;
 }
 
 int librados::IoCtxImpl::aio_read(const object_t oid, AioCompletionImpl *c,
 				  char *buf, size_t len, uint64_t off,
-				  uint64_t snapid, const blkin_trace_info *info)
+				  uint64_t snapid, 
+				  const std::unique_ptr<opentracing::Span>& parent_trace)
 {
   FUNCTRACE(client->cct);
   if (len > (size_t) INT_MAX)
@@ -854,14 +889,19 @@ int librados::IoCtxImpl::aio_read(const object_t oid, AioCompletionImpl *c,
   c->blp = &c->bl;
   c->out_buf = buf;
 
-  ZTracer::Trace trace;
-  if (info)
-    trace.init("rados read", &objecter->trace_endpoint, info);
+  std::unique_ptr<opentracing::Span> span;
+  if (parent_trace) {
+      span = opentracing::Tracer::Global()->StartSpan(
+        "IoCtxImpl::aio_read, rados operate", { opentracing::ChildOf(&parent_trace->context()) });
+  }
+  else{
+      span = opentracing::Tracer::Global()->StartSpan("IoCtxImpl::aio_read, rados operate");
+  }
 
   Objecter::Op *o = objecter->prepare_read_op(
     oid, oloc,
     off, len, snapid, &c->bl, 0,
-    oncomplete, &c->objver, nullptr, 0, &trace);
+    oncomplete, &c->objver, nullptr, 0);
   objecter->op_submit(o, &c->tid);
   return 0;
 }
@@ -956,7 +996,7 @@ int librados::IoCtxImpl::aio_cmpext(const object_t& oid,
 
 int librados::IoCtxImpl::aio_write(const object_t &oid, AioCompletionImpl *c,
 				   const bufferlist& bl, size_t len,
-				   uint64_t off, const blkin_trace_info *info)
+				   uint64_t off, const std::unique_ptr<opentracing::Span>& parent_trace)
 {
   FUNCTRACE(client->cct);
   auto ut = ceph::real_clock::now();
@@ -974,9 +1014,16 @@ int librados::IoCtxImpl::aio_write(const object_t &oid, AioCompletionImpl *c,
 #if defined(WITH_LTTNG) && defined(WITH_EVENTTRACE)
   ((C_aio_Complete *) oncomplete)->oid = oid;
 #endif
-  ZTracer::Trace trace;
-  if (info)
-    trace.init("rados write", &objecter->trace_endpoint, info);
+
+  
+  std::unique_ptr<opentracing::Span> span;
+  if (parent_trace) {
+      span = opentracing::Tracer::Global()->StartSpan(
+        "IoCtxImpl::aio_write, rados operate", { opentracing::ChildOf(&parent_trace->context()) });
+  }
+  else{
+      span = opentracing::Tracer::Global()->StartSpan("IoCtxImpl::aio_write, rados operate");
+  }
 
   c->io = this;
   queue_aio_write(c);
@@ -984,7 +1031,7 @@ int librados::IoCtxImpl::aio_write(const object_t &oid, AioCompletionImpl *c,
   Objecter::Op *o = objecter->prepare_write_op(
     oid, oloc,
     off, len, snapc, bl, ut, 0,
-    oncomplete, &c->objver, nullptr, 0, &trace);
+    oncomplete, &c->objver, nullptr, 0);
   objecter->op_submit(o, &c->tid);
 
   return 0;

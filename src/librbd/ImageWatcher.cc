@@ -17,6 +17,9 @@
 #include "include/encoding.h"
 #include "common/errno.h"
 #include "common/WorkQueue.h"
+
+//#include <boost/lambda/bind.hpp>
+//#include <boost/lambda/lambda.hpp>
 #include <boost/bind.hpp>
 
 #define dout_subsys ceph_subsys_rbd

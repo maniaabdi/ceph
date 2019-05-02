@@ -13,6 +13,7 @@
 #include "librados.h"
 #include "rados_types.hpp"
 
+
 namespace libradosstriper
 {
   class RadosStriper;
@@ -348,6 +349,8 @@ namespace librados
     ObjectOperation& operator=(const ObjectOperation& rhs);
     friend class IoCtx;
     friend class Rados;
+  //public:
+//	std::unique_ptr<opentracing::Span> active_parent;
   };
 
   /*
@@ -1107,31 +1110,34 @@ namespace librados
      * @param snaps currently existing selfmanaged snapshot ids for this object
      * @returns 0 on success, negative error code on failure
      */
+
     int aio_operate(const std::string& oid, AioCompletion *c,
-		    ObjectWriteOperation *op, snap_t seq,
-		    std::vector<snap_t>& snaps);
+                    ObjectWriteOperation *op, snap_t seq,
+                    std::vector<snap_t>& snaps);
     int aio_operate(const std::string& oid, AioCompletion *c,
         ObjectWriteOperation *op, snap_t seq,
         std::vector<snap_t>& snaps,
-        const blkin_trace_info *trace_info);
+        void *parent_trace=0);
     int aio_operate(const std::string& oid, AioCompletion *c,
         ObjectWriteOperation *op, snap_t seq,
         std::vector<snap_t>& snaps, int flags,
-        const blkin_trace_info *trace_info);
+         void *parent_trace=0);
     int aio_operate(const std::string& oid, AioCompletion *c,
-		    ObjectReadOperation *op, bufferlist *pbl);
+                    ObjectReadOperation *op, bufferlist *pbl);
 
     int aio_operate(const std::string& oid, AioCompletion *c,
-		    ObjectReadOperation *op, snap_t snapid, int flags,
-		    bufferlist *pbl)
+                    ObjectReadOperation *op, snap_t snapid, int flags,
+                    bufferlist *pbl)
       __attribute__ ((deprecated));
 
     int aio_operate(const std::string& oid, AioCompletion *c,
-		    ObjectReadOperation *op, int flags,
-		    bufferlist *pbl);
+                    ObjectReadOperation *op, int flags,
+                    bufferlist *pbl);
     int aio_operate(const std::string& oid, AioCompletion *c,
         ObjectReadOperation *op, int flags,
-        bufferlist *pbl, const blkin_trace_info *trace_info);
+        bufferlist *pbl,  void *parent_trace=0);
+
+
 
     // watch/notify
     int watch2(const std::string& o, uint64_t *handle,

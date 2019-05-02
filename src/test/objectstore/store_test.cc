@@ -4332,7 +4332,7 @@ TEST_P(StoreTestSpecificAUSize, SyntheticMatrixSharding) {
     { "bluestore_default_buffered_write", "true", 0 },
     { 0 },
   };
-  do_matrix(m, std::bind(&StoreTest::doSyntheticTest, this, _1, _2, _3, _4));
+  do_matrix(m, std::bind(&StoreTest::doSyntheticTest, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4));
 }
 
 TEST_P(StoreTestSpecificAUSize, ZipperPatternSharded) {
@@ -4392,7 +4392,7 @@ TEST_P(StoreTestSpecificAUSize, SyntheticMatrixCsumAlgorithm) {
     { "bluestore_default_buffered_write", "false", 0 },
     { 0 },
   };
-  do_matrix(m, std::bind(&StoreTest::doSyntheticTest, this, _1, _2, _3, _4));
+  do_matrix(m, std::bind(&StoreTest::doSyntheticTest, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4));
 }
 
 TEST_P(StoreTestSpecificAUSize, SyntheticMatrixCsumVsCompression) {
@@ -4412,7 +4412,7 @@ TEST_P(StoreTestSpecificAUSize, SyntheticMatrixCsumVsCompression) {
     { "bluestore_sync_submit_transaction", "false", 0 },
     { 0 },
   };
-  do_matrix(m, std::bind(&StoreTest::doSyntheticTest, this, _1, _2, _3, _4));
+  do_matrix(m, std::bind(&StoreTest::doSyntheticTest, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4));
 }
 
 TEST_P(StoreTestSpecificAUSize, SyntheticMatrixCompression) {
@@ -4429,7 +4429,7 @@ TEST_P(StoreTestSpecificAUSize, SyntheticMatrixCompression) {
     { "bluestore_sync_submit_transaction", "true", 0 },
     { 0 },
   };
-  do_matrix(m, std::bind(&StoreTest::doSyntheticTest, this, _1, _2, _3, _4));
+  do_matrix(m, std::bind(&StoreTest::doSyntheticTest, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3,std::placeholders::_4));
 }
 
 TEST_P(StoreTestSpecificAUSize, SyntheticMatrixCompressionAlgorithm) {
@@ -4446,7 +4446,7 @@ TEST_P(StoreTestSpecificAUSize, SyntheticMatrixCompressionAlgorithm) {
     { "bluestore_default_buffered_write", "false", 0 },
     { 0 },
   };
-  do_matrix(m, std::bind(&StoreTest::doSyntheticTest, this, _1, _2, _3, _4));
+  do_matrix(m, std::bind(&StoreTest::doSyntheticTest, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4));
 }
 
 TEST_P(StoreTestSpecificAUSize, SyntheticMatrixNoCsum) {
@@ -4466,7 +4466,7 @@ TEST_P(StoreTestSpecificAUSize, SyntheticMatrixNoCsum) {
     { "bluestore_sync_submit_transaction", "true", "false", 0 },
     { 0 },
   };
-  do_matrix(m, std::bind(&StoreTest::doSyntheticTest, this, _1, _2, _3, _4));
+  do_matrix(m, std::bind(&StoreTest::doSyntheticTest, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4));
 }
 
 TEST_P(StoreTestSpecificAUSize, SyntheticMatrixPreferDeferred) {
@@ -4483,7 +4483,7 @@ TEST_P(StoreTestSpecificAUSize, SyntheticMatrixPreferDeferred) {
     { "bluestore_prefer_deferred_size", "32768", "0", 0},
     { 0 },
   };
-  do_matrix(m, std::bind(&StoreTest::doSyntheticTest, this, _1, _2, _3, _4));
+  do_matrix(m, std::bind(&StoreTest::doSyntheticTest, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4));
 }
 #endif // WITH_BLUESTORE
 
