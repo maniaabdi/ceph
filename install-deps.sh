@@ -87,22 +87,22 @@ ENDOFKEY
         xenial)
             old=5;;
     esac
-    $SUDO update-alternatives --remove-all gcc || true
-    $SUDO update-alternatives \
-	 --install /usr/bin/gcc gcc /usr/bin/gcc-${new} 20 \
-	 --slave   /usr/bin/g++ g++ /usr/bin/g++-${new}
+   # $SUDO update-alternatives --remove-all gcc || true
+   # $SUDO update-alternatives \
+	 #--install /usr/bin/gcc gcc /usr/bin/gcc-${new} 20 \
+	 #--slave   /usr/bin/g++ g++ /usr/bin/g++-${new}
 
-    if [ -f /usr/bin/g++-${old} ]; then
-      $SUDO update-alternatives \
-  	 --install /usr/bin/gcc gcc /usr/bin/gcc-${old} 10 \
-  	 --slave   /usr/bin/g++ g++ /usr/bin/g++-${old}
-    fi
+    #if [ -f /usr/bin/g++-${old} ]; then
+    #  $SUDO update-alternatives \
+  	# --install /usr/bin/gcc gcc /usr/bin/gcc-${old} 10 \
+  	# --slave   /usr/bin/g++ g++ /usr/bin/g++-${old}
+    #fi
 
-    $SUDO update-alternatives --auto gcc
+    #$SUDO update-alternatives --auto gcc
 
     # cmake uses the latter by default
-    $SUDO ln -nsf /usr/bin/gcc /usr/bin/$(uname -m)-linux-gnu-gcc
-    $SUDO ln -nsf /usr/bin/g++ /usr/bin/$(uname -m)-linux-gnu-g++
+    #$SUDO ln -nsf /usr/bin/gcc /usr/bin/$(uname -m)-linux-gnu-gcc
+    #$SUDO ln -nsf /usr/bin/g++ /usr/bin/$(uname -m)-linux-gnu-g++
 }
 
 function install_pkg_on_ubuntu {

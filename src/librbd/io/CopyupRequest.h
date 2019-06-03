@@ -8,6 +8,7 @@
 #include "include/rados/librados.hpp"
 #include "include/buffer.h"
 #include "common/Mutex.h"
+#include "include/tracer.h"
 #include "common/zipkin_trace.h"
 #include "librbd/io/AsyncOperation.h"
 #include "librbd/io/Types.h"
@@ -39,6 +40,7 @@ public:
 
   CopyupRequest(ImageCtxT *ictx, const std::string &oid, uint64_t objectno,
                 Extents &&image_extents, const ZTracer::Trace &parent_trace);
+
   ~CopyupRequest();
 
   void append_request(AbstractObjectWriteRequest<ImageCtxT> *req);
@@ -90,6 +92,7 @@ private:
   uint64_t m_object_no;
   Extents m_image_extents;
   ZTracer::Trace m_trace;
+  std::unique_ptr<opentracing::Span> m_jaeger_trace;
 
   State m_state;
   bool m_flatten;

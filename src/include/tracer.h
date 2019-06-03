@@ -1,5 +1,7 @@
 #include <iostream>
 #include <yaml-cpp/yaml.h>
+#include <jaegertracing/Span.h>
+#include <opentracing/span.h>
 #include <jaegertracing/Tracer.h>
 
 using namespace std;
